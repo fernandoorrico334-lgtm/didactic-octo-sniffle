@@ -1,3 +1,6 @@
 git add .
 git commit -m "add gitignore"
 git push
+git rm -r --cached venv
+git commit -m "remove venv"
+git push
