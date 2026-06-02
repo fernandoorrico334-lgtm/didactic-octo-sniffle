@@ -83,6 +83,41 @@ scanner:
 
 Para aumentar a precisao, use `config/manual_pairs.yaml` com pares revisados. O arquivo aceita IDs/slugs/tickers exatos e tambem campos `polymarket_question_contains` e `kalshi_question_contains` para ajudar quando o identificador publico ainda nao estiver claro.
 
+## Deploy no Railway
+
+O projeto tambem inclui `railway.toml` para publicar o mesmo Web Service no Railway.
+
+1. No Railway, crie um projeto e escolha **Deploy from GitHub repo**.
+2. Conecte o repositorio `didactic-octo-sniffle`.
+3. Nas configuracoes do service, use:
+
+```text
+Root Directory=/polymarket-kalshi-arbitrage
+Config File=/polymarket-kalshi-arbitrage/railway.toml
+```
+
+4. Adicione as variaveis:
+
+```text
+ARBITRAGE_CONFIG=config/settings.yaml
+ARBITRAGE_DATA_MODE=live
+ARBITRAGE_AUTOSTART=true
+ARBITRAGE_USERS_PATH=/tmp/arbflow-users.json
+ARBITRAGE_SECURE_COOKIES=true
+ARBITRAGE_SESSION_SECRET=gere_uma_chave_longa
+ARBITRAGE_ADMIN_USER=seu_usuario_admin
+ARBITRAGE_ADMIN_PASSWORD=sua_senha_admin
+ARBITRAGE_SEED_USERS=[{"username":"tester1","password":"tester123","role":"viewer"}]
+```
+
+`ARBITRAGE_SEED_USERS` e opcional, mas ajuda porque o armazenamento em `/tmp` nao deve ser tratado como persistente entre redeploys. Depois do deploy, va em **Settings > Networking > Public Networking** e gere um dominio publico.
+
+O start command configurado para Railway e:
+
+```text
+uvicorn app.main:app --host 0.0.0.0 --port $PORT
+```
+
 ## Como funciona o sinal
 
 Para o mesmo evento binario, o scanner testa duas direcoes:
