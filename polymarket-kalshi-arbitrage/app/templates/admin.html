@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin | ArbFlow</title>
+    <link rel="stylesheet" href="/static/dashboard.css" />
+  </head>
+  <body>
+    <header class="topbar compact-topbar">
+      <div>
+        <p class="eyebrow">ArbFlow Terminal</p>
+        <h1>Admin</h1>
+        <p class="subhead">Controle de usuários</p>
+      </div>
+      <div class="actions">
+        <span class="user-chip">{{ current_user.username }}</span>
+        <a class="action-link" href="/">Dashboard</a>
+        <form action="/logout" method="post">
+          <button class="ghost-button" type="submit">Sair</button>
+        </form>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel admin-grid">
+        <article class="admin-form-block">
+          <h2>Novo usuário</h2>
+          {% if error %}
+          <p class="form-alert">{{ error }}</p>
+          {% endif %}
+          {% if message %}
+          <p class="form-success">{{ message }}</p>
+          {% endif %}
+          <form class="auth-form" action="/admin/users" method="post">
+            <label>
+              <span>Usuário</span>
+              <input name="username" required />
+            </label>
+            <label>
+              <span>Senha</span>
+              <input name="password" type="password" required />
+            </label>
+            <label>
+              <span>Perfil</span>
+              <select name="role">
+                <option value="viewer">Usuário</option>
+                <option value="admin">Admin</option>
+              </select>
+            </label>
+            <button type="submit">Criar usuário</button>
+          </form>
+        </article>
+
+        <article class="admin-users">
+          <h2>Usuários</h2>
+          <div class="users-list">
+            {% for user in users %}
+            <div class="user-row">
+              <div>
+                <strong>{{ user.username }}</strong>
+                <span>{{ "Admin" if user.role == "admin" else "Usuário" }} · {{ "Ativo" if user.active else "Inativo" }}</span>
+              </div>
+              <form action="/admin/users/{{ user.username }}/toggle" method="post">
+                <button class="ghost-button" type="submit">{{ "Desativar" if user.active else "Ativar" }}</button>
+              </form>
+            </div>
+            {% endfor %}
+          </div>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

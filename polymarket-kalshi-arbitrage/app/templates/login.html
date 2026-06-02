@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login | ArbFlow</title>
+    <link rel="stylesheet" href="/static/dashboard.css" />
+  </head>
+  <body class="auth-screen">
+    <main class="auth-shell">
+      <section class="auth-panel" aria-label="Login">
+        <p class="eyebrow">ArbFlow Terminal</p>
+        <h1>ArbFlow</h1>
+        <p class="subhead">Polymarket / Kalshi live arbitrage</p>
+        <form class="auth-form" action="/login" method="post">
+          {% if error %}
+          <p class="form-alert">{{ error }}</p>
+          {% endif %}
+          <label>
+            <span>Usuário</span>
+            <input name="username" autocomplete="username" required />
+          </label>
+          <label>
+            <span>Senha</span>
+            <input name="password" type="password" autocomplete="current-password" required />
+          </label>
+          <button type="submit">Entrar</button>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

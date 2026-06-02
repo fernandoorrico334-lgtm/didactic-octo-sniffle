@@ -1,0 +1,9 @@
+[
+  {
+    "username": "admin",
+    "password_hash": "pbkdf2_sha256$210000$_yZp_YoSU1gnkk8msR6u7A$aAEaflFMXEuneTh2dY0mNMyBNtgLCLqk0ukakB92Qc8",
+    "role": "admin",
+    "active": true,
+    "created_at": 1780192936
+  }
+]

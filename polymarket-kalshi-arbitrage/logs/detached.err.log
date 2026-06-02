@@ -1,0 +1,17 @@
+
+INFO:     Started server process [33984]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8011 (Press CTRL+C to quit)
+Traceback (most recent call last):
+  File "<frozen runpy>", line 189, in _run_module_as_main
+  File "<frozen runpy>", line 148, in _get_module_details
+  File "<frozen runpy>", line 112, in _get_module_details
+  File "C:\Users\Pichau\Documents\New project\polymarket-kalshi-arbitrage\.deps\uvicorn\__init__.py", line 1, in <module>
+    from uvicorn.config import Config
+  File "C:\Users\Pichau\Documents\New project\polymarket-kalshi-arbitrage\.deps\uvicorn\config.py", line 10, in <module>
+    import ssl
+  File "C:\Users\Pichau\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\ssl.py", line 100, in <module>
+    import _ssl             # if we can't import it, let the error propagate
+    ^^^^^^^^^^^
+ImportError: DLL load failed while importing _ssl: Erro interno.

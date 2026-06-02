@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Preview dark</title>
+    <link rel="stylesheet" href="app/static/dashboard.css" />
+  </head>
+  <body>
+    <main class="dashboard-shell">
+      <section class="signals-panel" aria-label="Sinais encontrados">
+        <section class="arb-note" aria-label="Explicação da arbitragem">
+          <span class="status floating-status">OK</span>
+          <p>AQUI A ARBITRAGEM ACONTECE QUANDO O CUSTO DO SIM + NÃO FICA ABAIXO DE $1.00.</p>
+          <p>EXEMPLO: SIM $0.49 + NÃO $0.47 = $0.96. VOCÊ PAGA $0.96 PARA RECEBER $1.00 NO FINAL. LUCRO BRUTO: $0.04 POR UNIDADE.</p>
+        </section>
+
+        <div class="toolbar">
+          <div class="category-tabs" role="tablist" aria-label="Categorias de sinais">
+            <button class="category-tab is-active" type="button"><span>TODOS</span><strong>3</strong></button>
+            <button class="category-tab" type="button"><span>POLÍTICA</span><strong>0</strong></button>
+            <button class="category-tab" type="button"><span>ECONOMIA</span><strong>1</strong></button>
+            <button class="category-tab" type="button"><span>ESPORTES</span><strong>0</strong></button>
+            <button class="category-tab" type="button"><span>CRIPTO</span><strong>1</strong></button>
+            <button class="category-tab" type="button"><span>CLIMA</span><strong>1</strong></button>
+          </div>
+          <div class="filter-bar" aria-label="Filtros de sinais">
+            <label><span>Porcentagem mín. (%)</span><input type="number" value="0" /></label>
+            <label><span>Liquidez mín. ($)</span><input type="number" value="0" /></label>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Mercado</th>
+                <th>SIM</th>
+                <th>NÃO</th>
+                <th>Porcentagem</th>
+                <th>Tamanho</th>
+                <th>Lucro est.</th>
+                <th>Confiança</th>
+                <th>Calculadora</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong class="market-title">Fed cuts rates by June 2026?</strong><span class="price">POLYMARKET SIM contra KALSHI NÃO</span></td>
+                <td><a class="venue" href="#">POLYMARKET SIM</a><span class="price">Preço $0.490 | Odd 2.04x</span><span class="price">Liquidez 19</span></td>
+                <td><a class="venue" href="#">KALSHI NÃO</a><span class="price">Preço $0.470 | Odd 2.13x</span><span class="price">Liquidez 19</span></td>
+                <td><span class="edge">4.00%</span><span class="price">bruto 4.00%</span><span class="price">taxas $0.000</span></td>
+                <td><strong>19</strong><span class="price">$18.24 max</span></td>
+                <td>$0.76</td>
+                <td>88.33%</td>
+                <td>
+                  <div class="calculator">
+                    <div class="calc-inputs">
+                      <label class="calc-label"><span>Stake total</span><input class="stake-input" value="18.24" /></label>
+                      <label class="calc-label"><span>POLYMARKET SIM</span><input class="stake-input" value="9.31" /></label>
+                      <label class="calc-label"><span>KALSHI NÃO</span><input class="stake-input" value="8.93" /></label>
+                    </div>
+                    <div class="calc-grid"><span>Contratos</span><strong>19</strong><span>Lucro</span><strong class="edge">$0.76</strong><span>Porcentagem</span><strong class="edge">4.17%</strong></div>
+                    <span class="calc-note">Limite estimado $18.24</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><strong class="market-title">CPI inflation above forecast?</strong><span class="price">POLYMARKET SIM contra KALSHI NÃO</span></td>
+                <td><a class="venue" href="#">POLYMARKET SIM</a><span class="price">Preço $0.310 | Odd 3.23x</span><span class="price">Liquidez 12</span></td>
+                <td><a class="venue" href="#">KALSHI NÃO</a><span class="price">Preço $0.650 | Odd 1.54x</span><span class="price">Liquidez 12</span></td>
+                <td><span class="edge">4.00%</span><span class="price">bruto 4.00%</span><span class="price">taxas $0.000</span></td>
+                <td><strong>12</strong><span class="price">$11.52 max</span></td>
+                <td>$0.48</td>
+                <td class="warn">80.00%</td>
+                <td>
+                  <div class="calculator">
+                    <div class="calc-inputs">
+                      <label class="calc-label"><span>Stake total</span><input class="stake-input" value="11.52" /></label>
+                      <label class="calc-label"><span>POLYMARKET SIM</span><input class="stake-input" value="3.72" /></label>
+                      <label class="calc-label"><span>KALSHI NÃO</span><input class="stake-input" value="7.80" /></label>
+                    </div>
+                    <div class="calc-grid"><span>Contratos</span><strong>12</strong><span>Lucro</span><strong class="edge">$0.48</strong><span>Porcentagem</span><strong class="edge">4.17%</strong></div>
+                    <span class="calc-note">Limite estimado $11.52</span>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><strong class="market-title">Bitcoin closes above $100k this month?</strong><span class="price">KALSHI SIM contra POLYMARKET NÃO</span></td>
+                <td><a class="venue" href="#">KALSHI SIM</a><span class="price">Preço $0.600 | Odd 1.67x</span><span class="price">Liquidez 22</span></td>
+                <td><a class="venue" href="#">POLYMARKET NÃO</a><span class="price">Preço $0.380 | Odd 2.63x</span><span class="price">Liquidez 22</span></td>
+                <td><span class="edge">2.00%</span><span class="price">bruto 2.00%</span><span class="price">taxas $0.000</span></td>
+                <td><strong>22</strong><span class="price">$21.56 max</span></td>
+                <td>$0.44</td>
+                <td>98.00%</td>
+                <td>
+                  <div class="calculator">
+                    <div class="calc-inputs">
+                      <label class="calc-label"><span>Stake total</span><input class="stake-input" value="21.56" /></label>
+                      <label class="calc-label"><span>KALSHI SIM</span><input class="stake-input" value="13.20" /></label>
+                      <label class="calc-label"><span>POLYMARKET NÃO</span><input class="stake-input" value="8.36" /></label>
+                    </div>
+                    <div class="calc-grid"><span>Contratos</span><strong>22</strong><span>Lucro</span><strong class="edge">$0.44</strong><span>Porcentagem</span><strong class="edge">2.04%</strong></div>
+                    <span class="calc-note">Limite estimado $21.56</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </section>
+    </main>
+  </body>
+</html>

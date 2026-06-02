@@ -1,0 +1,21 @@
+INFO:     127.0.0.1:50077 - "GET /api/health HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61884 - "GET /api/signals HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61885 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61885 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:61885 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61885 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61885 - "GET /api/market-feed HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54710 - "GET /api/health HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:56660 - "GET /api/signals HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:56660 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56660 - "GET /static/dashboard.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53894 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62588 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62588 - "GET /static/dashboard.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62588 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62393 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:62393 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62393 - "GET /static/dashboard.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62393 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57592 - "GET /api/signals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53063 - "GET /api/market-feed HTTP/1.1" 200 OK

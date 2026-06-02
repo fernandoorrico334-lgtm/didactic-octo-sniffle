@@ -1,0 +1,9 @@
+pairs:
+  # Manual mappings are the safest way to approve identical-resolution markets.
+  # Replace these examples with real IDs/tickers after reviewing both rule books.
+  - id: "btc-100k-before-2026-07-01"
+    polymarket_slug: "will-bitcoin-hit-100000-before-july-1-2026"
+    kalshi_ticker: "KXBTC-26JUL01-T100000"
+    confidence: 0.98
+    resolution_notes: "Example mapping. Review both venues before enabling real trading."
+
