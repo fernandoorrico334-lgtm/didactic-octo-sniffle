@@ -1,0 +1,38 @@
+scanner:
+  # Railway's starter resources can become unresponsive with a full all-market scan.
+  # This keeps the live demo stable while still scanning thousands of markets.
+  data_mode: "live"
+  autostart: true
+  interval_seconds: 300
+  polymarket_limit: 5000
+  kalshi_limit: 5000
+  polymarket_page_size: 500
+  kalshi_page_size: 1000
+  max_pages_per_venue: 10
+  max_concurrent_requests: 4
+  retry_attempts: 2
+  retry_backoff_seconds: 0.5
+
+  include_polymarket_orderbooks: false
+
+  min_market_liquidity: 0.0
+  min_market_volume_24h: 0.0
+  min_match_confidence: 0.58
+  match_candidate_limit_per_market: 60
+  max_auto_pairs: 300
+  min_net_edge: 0.01
+  signal_limit: 50
+
+  max_position_size: 25.0
+  unknown_liquidity_size: 5.0
+  polymarket_fee_bps: 0.0
+  kalshi_fee_bps: 0.0
+
+api:
+  polymarket_gamma_base: "https://gamma-api.polymarket.com"
+  polymarket_clob_base: "https://clob.polymarket.com"
+  kalshi_base: "https://external-api.kalshi.com/trade-api/v2"
+  request_timeout_seconds: 12.0
+  user_agent: "polymarket-kalshi-arbitrage/0.1"
+
+manual_pairs_path: "config/manual_pairs.yaml"
