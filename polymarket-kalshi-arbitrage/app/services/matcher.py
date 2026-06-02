@@ -86,11 +86,39 @@ def time_score(left: MarketSnapshot, right: MarketSnapshot) -> float:
     return 1.0 if left.close_time[:10] == right.close_time[:10] else 0.25
 
 
-def confidence_score(left: MarketSnapshot, right: MarketSnapshot) -> float:
-    words = token_score(left.question, right.question)
-    nums = number_score(left.question, right.question)
-    times = time_score(left, right)
+def _market_features(market: MarketSnapshot) -> dict[str, Any]:
+    return {
+        "tokens": tokenize(market.question),
+        "numbers": extract_numbers(market.question),
+        "close_date": market.close_time[:10] if market.close_time else None,
+    }
+
+
+def _set_overlap_score(left: set[str], right: set[str], *, empty_score: float) -> float:
+    if not left and not right:
+        return empty_score
+    if not left or not right:
+        return 0.0
+    return len(left & right) / len(left | right)
+
+
+def _time_score_from_features(left: dict[str, Any], right: dict[str, Any]) -> float:
+    left_date = left["close_date"]
+    right_date = right["close_date"]
+    if not left_date or not right_date:
+        return 0.5
+    return 1.0 if left_date == right_date else 0.25
+
+
+def _confidence_from_features(left: dict[str, Any], right: dict[str, Any]) -> float:
+    words = _set_overlap_score(left["tokens"], right["tokens"], empty_score=0.0)
+    nums = _set_overlap_score(left["numbers"], right["numbers"], empty_score=1.0)
+    times = _time_score_from_features(left, right)
     return round((0.70 * words) + (0.20 * nums) + (0.10 * times), 4)
+
+
+def confidence_score(left: MarketSnapshot, right: MarketSnapshot) -> float:
+    return _confidence_from_features(_market_features(left), _market_features(right))
 
 
 def stable_pair_id(left: MarketSnapshot, right: MarketSnapshot) -> str:
@@ -166,13 +194,15 @@ def match_markets(
     used_kalshi = {pair.kalshi.market_id for pair in pairs}
 
     candidates: list[tuple[float, MarketSnapshot, MarketSnapshot]] = []
-    for poly in polymarkets:
-        if poly.market_id in used_poly:
-            continue
-        for kalshi in kalshis:
-            if kalshi.market_id in used_kalshi:
+    poly_features = [(market, _market_features(market)) for market in polymarkets if market.market_id not in used_poly]
+    kalshi_features = [(market, _market_features(market)) for market in kalshis if market.market_id not in used_kalshi]
+    skip_disjoint_tokens = min_confidence > 0.3
+
+    for poly, poly_feature in poly_features:
+        for kalshi, kalshi_feature in kalshi_features:
+            if skip_disjoint_tokens and not (poly_feature["tokens"] & kalshi_feature["tokens"]):
                 continue
-            score = confidence_score(poly, kalshi)
+            score = _confidence_from_features(poly_feature, kalshi_feature)
             if score >= min_confidence:
                 candidates.append((score, poly, kalshi))
 
