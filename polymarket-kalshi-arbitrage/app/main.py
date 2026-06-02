@@ -22,6 +22,10 @@ from app.utils import dataclass_to_dict
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 
 CONFIG_PATH = os.getenv("ARBITRAGE_CONFIG")
+if os.getenv("RAILWAY_ENVIRONMENT") and (not CONFIG_PATH or CONFIG_PATH == "config/settings.yaml"):
+    railway_config = PROJECT_ROOT / "config" / "settings.railway.yaml"
+    if railway_config.exists():
+        CONFIG_PATH = railway_config
 settings = load_settings(CONFIG_PATH)
 scanner = MarketScanner(settings)
 
