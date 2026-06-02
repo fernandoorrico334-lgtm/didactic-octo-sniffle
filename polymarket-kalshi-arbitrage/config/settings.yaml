@@ -4,12 +4,13 @@ scanner:
   autostart: true
   interval_seconds: 180
   # Use 0 to scan all open markets returned by pagination.
-  polymarket_limit: 1000
-  kalshi_limit: 1000
+  polymarket_limit: 0
+  kalshi_limit: 0
   polymarket_page_size: 500
   kalshi_page_size: 1000
-  max_pages_per_venue: 10
-  max_concurrent_requests: 4
+  # Use 0 for no page cap. The matcher below keeps comparison work bounded.
+  max_pages_per_venue: 0
+  max_concurrent_requests: 6
   retry_attempts: 2
   retry_backoff_seconds: 0.5
 
@@ -17,7 +18,11 @@ scanner:
   include_polymarket_orderbooks: false
 
   # Matching and signal thresholds.
+  min_market_liquidity: 0.0
+  min_market_volume_24h: 0.0
   min_match_confidence: 0.58
+  match_candidate_limit_per_market: 80
+  max_auto_pairs: 500
   min_net_edge: 0.01
   signal_limit: 50
 

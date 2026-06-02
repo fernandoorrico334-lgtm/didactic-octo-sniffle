@@ -14,6 +14,8 @@ Projeto em Python/FastAPI para revisar, estabilizar e evoluir um sistema de arbi
 - Login local e pagina `/admin` para criar usuarios e ativar/desativar acessos.
 - Tema escuro para a experiencia principal do dashboard.
 - Scanner paginado para todos os mercados abertos das duas venues quando `polymarket_limit` e `kalshi_limit` estao em `0`.
+- Pre-filtro de mercados sem preco acionavel e limites opcionais de liquidez/volume antes do pareamento.
+- Pareamento por indice de candidatos, usando titulo, ticker/slug, evento, categoria, numeros e data, para evitar comparar tudo contra tudo.
 - Controle configuravel de concorrencia, conexoes HTTP e retry/backoff para respeitar rate limits.
 - Testes unitarios para matcher e calculo de arbitragem.
 - Modo `simulation` para demonstracao sem depender de credenciais.
@@ -69,10 +71,17 @@ scanner:
   data_mode: "live"
   polymarket_limit: 0
   kalshi_limit: 0
+  max_pages_per_venue: 0
   max_concurrent_requests: 8
   retry_attempts: 2
   retry_backoff_seconds: 0.5
+  match_candidate_limit_per_market: 80
+  max_auto_pairs: 500
 ```
+
+`polymarket_limit: 0`, `kalshi_limit: 0` e `max_pages_per_venue: 0` fazem o scanner continuar paginando ate a API acabar. Para nao travar no cruzamento bruto, o matcher cria blocos de candidatos e so compara mercados que compartilham sinais fortes, como nomes, numeros, data, categoria, ticker ou slug.
+
+Para aumentar a precisao, use `config/manual_pairs.yaml` com pares revisados. O arquivo aceita IDs/slugs/tickers exatos e tambem campos `polymarket_question_contains` e `kalshi_question_contains` para ajudar quando o identificador publico ainda nao estiver claro.
 
 ## Como funciona o sinal
 
@@ -110,6 +119,7 @@ O lucro estimado e:
 ## Proximas melhorias
 
 - Integrar WebSocket para reduzir atraso em vez de depender de polling.
+- Criar uma tela de revisao para aprovar pares sugeridos e gravar automaticamente em `manual_pairs.yaml`.
 - Adicionar executor dry-run com fila de ordens e simulacao de fill parcial.
 - Conectar autenticacao Kalshi para orderbooks privados/assinados quando necessario.
 - Conectar SDK oficial Polymarket para criacao/cancelamento de ordens.

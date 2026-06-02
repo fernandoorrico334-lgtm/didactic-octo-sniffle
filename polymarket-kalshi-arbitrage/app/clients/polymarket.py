@@ -166,9 +166,12 @@ class PolymarketClient:
             no_ask = clamp_price(1.0 - yes_bid)
 
         slug = item.get("slug")
-        url = self._market_url(item, slug)
+        event = self._first_event(item)
+        event_slug = self._event_slug(item, event)
+        url = self._market_url(item, slug, event_slug)
         yes_token = token_ids[yes_idx] if isinstance(token_ids, list) and yes_idx < len(token_ids) else None
         no_token = token_ids[no_idx] if isinstance(token_ids, list) and no_idx < len(token_ids) else None
+        tags = item.get("tags")
 
         return MarketSnapshot(
             venue="polymarket",
@@ -187,25 +190,50 @@ class PolymarketClient:
             url=url,
             metadata={
                 "category": item.get("category"),
-                "tags": item.get("tags"),
+                "tags": self._compact_tags(tags),
+                "event_slug": event_slug,
+                "event_title": event.get("title") if event else None,
+                "event_ticker": event.get("ticker") if event else None,
                 "yes_token_id": yes_token,
                 "no_token_id": no_token,
-                "raw": item,
             },
         )
 
-    def _market_url(self, item: dict[str, Any], market_slug: str | None) -> str | None:
+    def _first_event(self, item: dict[str, Any]) -> dict[str, Any] | None:
+        events = item.get("events")
+        if isinstance(events, list) and events and isinstance(events[0], dict):
+            return events[0]
+        return None
+
+    def _event_slug(self, item: dict[str, Any], event: dict[str, Any] | None) -> str | None:
+        event_slug = item.get("eventSlug") or item.get("event_slug")
+        if not event_slug and event:
+            event_slug = event.get("slug")
+        return str(event_slug) if event_slug else None
+
+    def _compact_tags(self, tags: Any) -> list[str]:
+        if not isinstance(tags, list):
+            return []
+        compact: list[str] = []
+        for tag in tags[:8]:
+            if isinstance(tag, dict):
+                value = tag.get("label") or tag.get("name") or tag.get("slug")
+            else:
+                value = tag
+            if value:
+                compact.append(str(value))
+        return compact
+
+    def _market_url(
+        self,
+        item: dict[str, Any],
+        market_slug: str | None,
+        event_slug: str | None = None,
+    ) -> str | None:
         if item.get("url"):
             return str(item["url"])
         if not market_slug:
             return None
-
-        event_slug = item.get("eventSlug") or item.get("event_slug")
-        events = item.get("events")
-        if not event_slug and isinstance(events, list) and events:
-            first_event = events[0]
-            if isinstance(first_event, dict):
-                event_slug = first_event.get("slug")
 
         if event_slug and event_slug != market_slug:
             return f"https://polymarket.com/event/{event_slug}/{market_slug}"

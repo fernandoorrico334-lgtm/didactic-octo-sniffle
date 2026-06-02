@@ -25,7 +25,11 @@ class ScannerSettings:
     retry_attempts: int = 2
     retry_backoff_seconds: float = 0.5
     include_polymarket_orderbooks: bool = False
+    min_market_liquidity: float = 0.0
+    min_market_volume_24h: float = 0.0
     min_match_confidence: float = 0.58
+    match_candidate_limit_per_market: int = 80
+    max_auto_pairs: int = 500
     min_net_edge: float = 0.01
     max_position_size: float = 25.0
     unknown_liquidity_size: float = 5.0

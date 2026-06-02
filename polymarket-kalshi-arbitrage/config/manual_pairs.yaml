@@ -1,6 +1,16 @@
 pairs:
   # Manual mappings are the safest way to approve identical-resolution markets.
   # Replace these examples with real IDs/tickers after reviewing both rule books.
+  #
+  # Supported exact fields:
+  # - polymarket_id
+  # - polymarket_slug
+  # - kalshi_id
+  # - kalshi_ticker
+  #
+  # Supported helper fields for review workflows:
+  # - polymarket_question_contains
+  # - kalshi_question_contains
   - id: "btc-100k-before-2026-07-01"
     polymarket_slug: "will-bitcoin-hit-100000-before-july-1-2026"
     kalshi_ticker: "KXBTC-26JUL01-T100000"

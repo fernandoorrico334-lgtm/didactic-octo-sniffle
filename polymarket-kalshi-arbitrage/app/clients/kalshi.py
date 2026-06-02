@@ -132,7 +132,10 @@ class KalshiClient:
             metadata={
                 "category": item.get("category"),
                 "event_ticker": item.get("event_ticker"),
-                "raw": item,
+                "series_ticker": item.get("series_ticker"),
+                "title": item.get("title"),
+                "subtitle": item.get("subtitle"),
+                "yes_sub_title": item.get("yes_sub_title"),
             },
         )
 

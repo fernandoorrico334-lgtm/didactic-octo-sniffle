@@ -16,6 +16,29 @@ from app.settings import Settings
 logger = logging.getLogger(__name__)
 
 
+def _has_actionable_prices(market) -> bool:
+    return market.yes_ask is not None and market.no_ask is not None
+
+
+def _passes_market_filters(market, settings: Settings) -> bool:
+    if not market.question or not _has_actionable_prices(market):
+        return False
+
+    min_liquidity = settings.scanner.min_market_liquidity
+    if min_liquidity > 0 and (market.liquidity or 0.0) < min_liquidity:
+        return False
+
+    min_volume = settings.scanner.min_market_volume_24h
+    if min_volume > 0 and (market.volume_24h or 0.0) < min_volume:
+        return False
+
+    return True
+
+
+def _prefilter_markets(markets, settings: Settings):
+    return [market for market in markets if _passes_market_filters(market, settings)]
+
+
 class MarketScanner:
     def __init__(self, settings: Settings):
         self.settings = settings
@@ -55,12 +78,17 @@ class MarketScanner:
                         ),
                     )
 
+                match_polymarkets = _prefilter_markets(polymarkets, self.settings)
+                match_kalshis = _prefilter_markets(kalshis, self.settings)
+
                 manual_specs = load_manual_pair_specs(self.settings.manual_pairs_path)
                 pairs = match_markets(
-                    polymarkets,
-                    kalshis,
+                    match_polymarkets,
+                    match_kalshis,
                     min_confidence=self.settings.scanner.min_match_confidence,
                     manual_specs=manual_specs,
+                    candidate_limit_per_market=self.settings.scanner.match_candidate_limit_per_market,
+                    max_auto_pairs=self.settings.scanner.max_auto_pairs,
                 )
                 signals = find_arbitrage_signals(pairs, self.settings.scanner)
                 self.snapshot = ScannerSnapshot(
