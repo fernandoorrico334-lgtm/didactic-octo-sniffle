@@ -149,6 +149,18 @@ def _admin_page(
     )
 
 
+@app.get("/healthz")
+@app.head("/healthz")
+async def render_healthcheck() -> dict[str, str]:
+    return {"status": "ok"}
+
+
+@app.head("/")
+@app.head("/login")
+async def render_head_healthcheck() -> dict[str, str]:
+    return {"status": "ok"}
+
+
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
     user = _current_user(request)
