@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: arbflow-demo
+    runtime: python
+    plan: free
+    rootDir: polymarket-kalshi-arbitrage
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /login
+    autoDeploy: true
+    envVars:
+      - key: ARBITRAGE_CONFIG
+        value: config/settings.yaml
+      - key: ARBITRAGE_DATA_MODE
+        value: live
+      - key: ARBITRAGE_AUTOSTART
+        value: "true"
+      - key: ARBITRAGE_USERS_PATH
+        value: /tmp/arbflow-users.json
+      - key: ARBITRAGE_SECURE_COOKIES
+        value: "true"
+      - key: ARBITRAGE_SESSION_SECRET
+        generateValue: true
+      - key: ARBITRAGE_ADMIN_USER
+        sync: false
+      - key: ARBITRAGE_ADMIN_PASSWORD
+        sync: false
+      - key: ARBITRAGE_SEED_USERS
+        sync: false
