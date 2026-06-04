@@ -60,6 +60,8 @@ TOKEN_ALIASES = {
     "bitcoin": {"btc"},
     "eth": {"ethereum"},
     "ethereum": {"eth"},
+    "temperature": {"temp"},
+    "temp": {"temperature"},
     "fed": {"federal", "reserve"},
     "federal": {"fed"},
     "rates": {"rate"},
@@ -67,6 +69,10 @@ TOKEN_ALIASES = {
     "raining": {"rain"},
     "precipitation": {"rain"},
     "nyc": {"new", "york"},
+    "nba": {"basketball"},
+    "basketball": {"nba"},
+    "knicks": {"new", "york"},
+    "spurs": {"san", "antonio"},
     "jan": {"january"},
     "feb": {"february"},
     "mar": {"march"},
@@ -79,6 +85,65 @@ TOKEN_ALIASES = {
     "oct": {"october"},
     "nov": {"november"},
     "dec": {"december"},
+}
+
+
+MONTHS = {
+    "jan": "01",
+    "january": "01",
+    "feb": "02",
+    "february": "02",
+    "mar": "03",
+    "march": "03",
+    "apr": "04",
+    "april": "04",
+    "may": "05",
+    "jun": "06",
+    "june": "06",
+    "jul": "07",
+    "july": "07",
+    "aug": "08",
+    "august": "08",
+    "sep": "09",
+    "sept": "09",
+    "september": "09",
+    "oct": "10",
+    "october": "10",
+    "nov": "11",
+    "november": "11",
+    "dec": "12",
+    "december": "12",
+}
+
+
+ASSET_ALIASES = {
+    "btc": {"btc", "bitcoin"},
+    "eth": {"eth", "ethereum"},
+}
+
+
+CITY_ALIASES = {
+    "new-york-city": {"new york city", "nyc", "new york"},
+    "chicago": {"chicago"},
+    "los-angeles": {"los angeles", "la"},
+    "miami": {"miami"},
+}
+
+
+LEAGUE_ALIASES = {
+    "nba": {"nba", "pro basketball"},
+    "nfl": {"nfl", "pro football"},
+    "mlb": {"mlb", "pro baseball"},
+    "nhl": {"nhl", "pro hockey"},
+    "fifa-world-cup": {"fifa world cup", "world cup"},
+}
+
+
+TEAM_ALIASES = {
+    "new-york-knicks": {"new york knicks", "knicks"},
+    "san-antonio-spurs": {"san antonio spurs", "spurs"},
+    "boston-red-sox": {"boston red sox", "boston"},
+    "new-york-yankees": {"new york yankees", "new york y", "yankees"},
 }
 
 
@@ -152,6 +217,200 @@ def _metadata_text(market: MarketSnapshot) -> str:
     return " ".join(str(part) for part in parts if part)
 
 
+def _full_market_text(market: MarketSnapshot) -> str:
+    return " ".join(
+        str(part)
+        for part in (
+            market.question,
+            market.ticker,
+            market.slug,
+            _metadata_text(market),
+            market.rules,
+        )
+        if part
+    )
+
+
+def _contains_alias(text: str, aliases: set[str]) -> bool:
+    normalized = normalize_text(text)
+    padded = f" {normalized} "
+    return any(f" {normalize_text(alias)} " in padded for alias in aliases)
+
+
+def _find_alias_key(text: str, alias_map: dict[str, set[str]]) -> str | None:
+    for key, aliases in alias_map.items():
+        if _contains_alias(text, aliases):
+            return key
+    return None
+
+
+def _year_markers(text: str, close_time: str | None) -> set[str]:
+    years = set(re.findall(r"\b20\d{2}\b", text))
+    if close_time and len(close_time) >= 4:
+        years.add(close_time[:4])
+    return years
+
+
+def _date_markers(text: str, close_time: str | None) -> set[str]:
+    normalized = normalize_text(text)
+    dates: set[str] = set()
+    if close_time:
+        dates.add(close_time[:10])
+
+    for month, day, year in re.findall(
+        r"\b(" + "|".join(MONTHS) + r")\s+(\d{1,2})(?:st|nd|rd|th)?(?:,)?\s+(20\d{2})\b",
+        normalized,
+    ):
+        dates.add(f"{year}-{MONTHS[month]}-{int(day):02d}")
+
+    fallback_year = close_time[:4] if close_time else None
+    if fallback_year:
+        for month, day in re.findall(
+            r"\b(" + "|".join(MONTHS) + r")\s+(\d{1,2})(?:st|nd|rd|th)?\b",
+            normalized,
+        ):
+            dates.add(f"{fallback_year}-{MONTHS[month]}-{int(day):02d}")
+    return dates
+
+
+def _scaled_amount(raw_value: str, suffix: str = "") -> float:
+    value = float(raw_value)
+    suffix = suffix.lower()
+    if suffix == "k":
+        value *= 1_000
+    elif suffix == "m":
+        value *= 1_000_000
+    elif suffix == "b":
+        value *= 1_000_000_000
+    return value
+
+
+def _contextual_thresholds(text: str, kind: str) -> set[float]:
+    normalized = normalize_text(text)
+    amounts: set[float] = set()
+    if kind == "crypto-price":
+        for raw_value, suffix in re.findall(
+            r"(?:\$|above|below|under|over|hit|hits|reach|reaches|reached)\s*\$?(\d+(?:\.\d+)?)(k|m|b)?\b",
+            normalized,
+        ):
+            amounts.add(_scaled_amount(raw_value, suffix))
+        for raw_value, suffix in re.findall(r"\$(\d+(?:\.\d+)?)(k|m|b)?\b", normalized):
+            amounts.add(_scaled_amount(raw_value, suffix))
+        return amounts
+
+    if kind == "weather-temp":
+        for raw_value in re.findall(r"(?:above|below|under|over)\s+(-?\d+(?:\.\d+)?)", normalized):
+            amounts.add(float(raw_value))
+        for raw_value in re.findall(r"(-?\d+(?:\.\d+)?)\s*(?:°|degrees?)", normalized):
+            amounts.add(float(raw_value))
+        return amounts
+
+    for raw_value, suffix in re.findall(r"\$?\b(\d+(?:\.\d+)?)(k|m|b)?\b", normalized):
+        value = float(raw_value)
+        if suffix:
+            value = _scaled_amount(raw_value, suffix)
+        elif value.is_integer() and 2020 <= int(value) <= 2035:
+            continue
+        amounts.add(value)
+    return amounts
+
+
+def _threshold_key(value: float) -> str:
+    if abs(value - round(value)) <= 0.02:
+        return str(int(round(value)))
+    if abs(value - (math.floor(value) + 0.99)) <= 0.021:
+        return str(int(math.ceil(value)))
+    if value >= 1_000:
+        return str(int(round(value)))
+    return f"{value:.2f}".rstrip("0").rstrip(".")
+
+
+def _market_kinds(text: str) -> set[str]:
+    normalized = normalize_text(text)
+    kinds: set[str] = set()
+    if "golden boot" in normalized and ("cleat" in normalized or "branded" in normalized):
+        kinds.add("worldcup-cleats")
+    if "first goalscorer" in normalized:
+        kinds.add("first-goalscorer")
+    if "road win" in normalized:
+        kinds.add("series-road-wins")
+    if "extra inning" in normalized:
+        kinds.add("extra-innings")
+    if "fewest goals" in normalized or "most goals" in normalized:
+        kinds.add("group-stage-goals")
+    if "temperature" in normalized or re.search(r"\btemp\b", normalized):
+        kinds.add("weather-temp")
+    if re.search(r"\brain\b", normalized):
+        kinds.add("weather-rain")
+    if ("bitcoin" in normalized or re.search(r"\bbtc\b", normalized)) and not (
+        "truflation" in normalized or "purchasing power" in normalized
+    ):
+        if any(word in normalized for word in ("price", "hit", "reach", "above", "below", "under")):
+            kinds.add("crypto-price")
+    if any(_contains_alias(normalized, aliases) for aliases in LEAGUE_ALIASES.values()):
+        if any(word in normalized for word in ("champion", "finals", "win")):
+            kinds.add("sports-champion")
+        if "winner" in normalized:
+            kinds.add("sports-game-winner")
+    if "presidential nomination" in normalized:
+        kinds.add("election-nomination")
+    elif "election" in normalized or "governor race" in normalized or "senate" in normalized:
+        kinds.add("election-winner")
+    return kinds
+
+
+def _kind_conflict(left: set[str], right: set[str]) -> bool:
+    if not left or not right or left & right:
+        return False
+    sports = {
+        "sports-champion",
+        "sports-game-winner",
+        "worldcup-cleats",
+        "first-goalscorer",
+        "series-road-wins",
+        "extra-innings",
+        "group-stage-goals",
+    }
+    weather = {"weather-temp", "weather-rain"}
+    crypto = {"crypto-price"}
+    politics = {"election-nomination", "election-winner"}
+    return any(left & group and right & group for group in (sports, weather, crypto, politics))
+
+
+def _contract_keys(market: MarketSnapshot) -> set[str]:
+    text = _full_market_text(market)
+    normalized = normalize_text(text)
+    keys: set[str] = set()
+    dates = _date_markers(normalized, market.close_time)
+    years = _year_markers(normalized, market.close_time)
+    kinds = _market_kinds(normalized)
+
+    asset = _find_alias_key(normalized, ASSET_ALIASES)
+    if asset and "crypto-price" in kinds:
+        thresholds = {_threshold_key(value) for value in _contextual_thresholds(normalized, "crypto-price")}
+        for threshold in thresholds:
+            for date in dates or years:
+                keys.add(f"crypto-price:{asset}:{threshold}:{date}")
+
+    city = _find_alias_key(normalized, CITY_ALIASES)
+    if city and "weather-temp" in kinds:
+        thresholds = {_threshold_key(value) for value in _contextual_thresholds(normalized, "weather-temp")}
+        for threshold in thresholds:
+            for date in dates:
+                keys.add(f"weather-temp:{city}:{threshold}:{date}")
+    if city and "weather-rain" in kinds:
+        for date in dates:
+            keys.add(f"weather-rain:{city}:{date}")
+
+    league = _find_alias_key(normalized, LEAGUE_ALIASES)
+    team = _find_alias_key(normalized, TEAM_ALIASES)
+    if league and team and "sports-champion" in kinds:
+        for year in years:
+            keys.add(f"sports-champion:{league}:{team}:{year}")
+
+    return keys
+
+
 def _category_value(market: MarketSnapshot) -> str | None:
     raw = market.metadata.get("category")
     if not raw:
@@ -161,6 +420,7 @@ def _category_value(market: MarketSnapshot) -> str | None:
 
 def _market_features(market: MarketSnapshot) -> dict[str, Any]:
     metadata_text = _metadata_text(market)
+    full_text = _full_market_text(market)
     searchable_text = f"{market.question} {metadata_text}"
     rules_text = (market.rules or "")[:600]
     return {
@@ -170,6 +430,8 @@ def _market_features(market: MarketSnapshot) -> dict[str, Any]:
         "numbers": extract_numbers(searchable_text),
         "close_date": market.close_time[:10] if market.close_time else None,
         "category": _category_value(market),
+        "contract_keys": _contract_keys(market),
+        "kinds": _market_kinds(full_text),
     }
 
 
@@ -205,6 +467,10 @@ def _confidence_from_features(left: dict[str, Any], right: dict[str, Any]) -> fl
     times = _time_score_from_features(left, right)
     category = _category_score_from_features(left, right)
     score = (0.46 * words) + (0.20 * search) + (0.06 * rules) + (0.16 * nums) + (0.09 * times) + (0.03 * category)
+    if left["contract_keys"] & right["contract_keys"]:
+        score = max(score, 0.94)
+    if _kind_conflict(left["kinds"], right["kinds"]):
+        score = min(score * 0.45, 0.35)
     if left["close_date"] and right["close_date"] and left["close_date"] != right["close_date"] and nums < 0.5:
         score *= 0.75
     return round(score, 4)
@@ -303,6 +569,8 @@ def _is_specific_number(value: str) -> bool:
 
 def _blocking_keys(features: dict[str, Any]) -> set[str]:
     keys: set[str] = set()
+    for contract_key in features["contract_keys"]:
+        keys.add(f"s:{contract_key}")
     for token in features["question_tokens"] | features["search_tokens"]:
         if len(token) >= 3 and not token.isdigit():
             keys.add(f"t:{token}")

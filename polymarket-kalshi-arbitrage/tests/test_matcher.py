@@ -139,3 +139,103 @@ def test_confidence_penalizes_same_topic_with_different_dates() -> None:
 
     assert confidence_score(poly, kalshi) < 0.58
 
+
+def test_contract_signature_matches_crypto_threshold_aliases() -> None:
+    poly = MarketSnapshot(
+        venue="polymarket",
+        market_id="poly-btc-150",
+        question="Will Bitcoin hit $150k by June 30, 2026?",
+        close_time="2026-06-30T23:59:00Z",
+    )
+    kalshi = MarketSnapshot(
+        venue="kalshi",
+        market_id="KXBTC-26JUN30-T150000",
+        ticker="KXBTC-26JUN30-T150000",
+        question="Will BTC price be above 149999.99 on Jun 30, 2026?",
+        close_time="2026-06-30T20:00:00Z",
+    )
+
+    pairs = match_markets([poly], [kalshi], min_confidence=0.58)
+
+    assert len(pairs) == 1
+    assert pairs[0].confidence >= 0.9
+
+
+def test_contract_signature_matches_weather_threshold_rounding() -> None:
+    poly = MarketSnapshot(
+        venue="polymarket",
+        market_id="poly-nyc-temp",
+        question="Will the temperature in NYC be above 97 degrees on June 4, 2026?",
+        close_time="2026-06-04T23:59:00Z",
+    )
+    kalshi = MarketSnapshot(
+        venue="kalshi",
+        market_id="KXTEMPNYCH-26JUN0415-T96.99",
+        ticker="KXTEMPNYCH-26JUN0415-T96.99",
+        question="Will the temp in New York City be above 96.99° on Jun 4, 2026 at 3pm EDT?",
+        close_time="2026-06-04T19:00:00Z",
+    )
+
+    pairs = match_markets([poly], [kalshi], min_confidence=0.58)
+
+    assert len(pairs) == 1
+    assert pairs[0].confidence >= 0.9
+
+
+def test_weather_signature_does_not_use_date_number_as_threshold() -> None:
+    poly = MarketSnapshot(
+        venue="polymarket",
+        market_id="poly-nyc-temp-80",
+        question="Will the temperature in NYC be above 80 degrees on June 4, 2026?",
+        close_time="2026-06-04T23:59:00Z",
+    )
+    kalshi = MarketSnapshot(
+        venue="kalshi",
+        market_id="KXTEMPNYCH-26JUN0415-T96.99",
+        ticker="KXTEMPNYCH-26JUN0415-T96.99",
+        question="Will the temp in New York City be above 96.99° on Jun 4, 2026 at 3pm EDT?",
+        close_time="2026-06-04T19:00:00Z",
+    )
+
+    assert match_markets([poly], [kalshi], min_confidence=0.58) == []
+
+
+def test_contract_signature_matches_sports_champion_aliases() -> None:
+    poly = MarketSnapshot(
+        venue="polymarket",
+        market_id="poly-knicks",
+        question="Will the New York Knicks win the 2026 NBA Finals?",
+        close_time="2026-07-01T00:00:00Z",
+    )
+    kalshi = MarketSnapshot(
+        venue="kalshi",
+        market_id="KXNBA-26CHAMP-NYK",
+        ticker="KXNBA-26CHAMP-NYK",
+        question="Will New York Knicks be the 2026 Pro Basketball champion?",
+        close_time="2026-06-20T14:00:00Z",
+    )
+
+    pairs = match_markets([poly], [kalshi], min_confidence=0.58)
+
+    assert len(pairs) == 1
+    assert pairs[0].confidence >= 0.9
+
+
+def test_kind_conflict_blocks_world_cup_false_positive() -> None:
+    poly = MarketSnapshot(
+        venue="polymarket",
+        market_id="poly-senegal-world-cup",
+        question="Will Senegal win the 2026 FIFA World Cup?",
+        close_time="2026-07-20T00:00:00Z",
+    )
+    kalshi = MarketSnapshot(
+        venue="kalshi",
+        market_id="KXWORLDCUPCLEATS-PUMA",
+        ticker="KXWORLDCUPCLEATS-PUMA",
+        question="Will the Golden Boot winner wear Puma branded cleats during the 2026 FIFA Men's World Cup?",
+        close_time="2026-07-20T03:59:00Z",
+    )
+
+    assert confidence_score(poly, kalshi) < 0.58
+    assert match_markets([poly], [kalshi], min_confidence=0.58) == []
+
